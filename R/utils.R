@@ -80,3 +80,37 @@ depart <- function(bird_id, last_mins = 1/60) {
   return(polar_dat)
   
 }
+
+last5 <- function(bird_id) {
+  dir_res <- 60
+  dir_brk <- seq(-dir_res/2, 360, by = dir_res)  
+  upper <- dir_brk[dir_brk > 0 & dir_brk < 360]
+  lower <- c(360 - dir_res/2, upper[-1 * length(upper)])
+  dir_lab <- paste0(lower, "-", upper)
+
+  anim_dat <- filter(mywa_filt, id == bird_id,
+                      difftime(max(ts), ts, units = "mins") <= 4) %>%
+    mutate(dir_bin = cut(dir, breaks = dir_brk, 
+                         ordered_result = TRUE,
+                         labels = dir_lab),
+           before_dep = -1 * round(as.numeric(difftime(max(ts), ts, units = "mins")))) %>%
+    group_by(site, before_dep, dir_bin) %>% 
+    summarise(count = n()) %>%
+    as.data.frame() %>%
+    complete(before_dep = seq(-4, 0), site, dir_bin, fill = list(count = 0)) %>%
+    arrange(site, before_dep, dir_bin)
+  
+  p <- ggplot(anim_dat, aes(x = dir_bin, y = count)) +
+    geom_bar(stat = "identity", color = "black", fill = "red", alpha = 0.5) +
+    scale_x_discrete(drop = FALSE, labels = waiver()) +
+    coord_polar(start = -((dir_res/2)/360) * 2 * pi) + 
+    geom_text(aes(y = count/2, label = count)) +
+    facet_grid(site ~ before_dep) + 
+    scale_y_continuous("", breaks = NULL) + 
+    ggtitle(paste0("Tag ID: ", bird_id, "\nMin to departure: ")) +
+    theme_bw() + 
+    theme(axis.title.x = element_blank())
+  
+  print(p)
+  
+}

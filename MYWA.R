@@ -2,8 +2,11 @@
 source("./R/utils.R")
 
 # Packages needed; these will be installed if not present
-toLoad = c("ggplot2", "plyr", "lubridate", "dplyr", "grid")
+toLoad = c("ggplot2", "plyr", "lubridate", "dplyr", "tidyr", "grid")
 instant_pkgs(toLoad); rm(toLoad)
+
+# Load filtered data and skip to line 57
+# load("./Data/mywa_filt.rda", verbose = TRUE)
 
 # Load RDS file of detections
 mywa_det <- readRDS("./Data/2015_BIMYWA_globaltags.rds")
